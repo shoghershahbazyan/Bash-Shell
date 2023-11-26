@@ -1,28 +1,6 @@
-#ifndef SHELL_H
-#define SHELL_H
-
-#include <iostream>
-#include <string>
-#include <unistd.h>
-#include <dirent.h>
+#include "shell.h"
 
 
-class Shell
-{
-private:
-	// Function declarations for command-line operations
-	void cd(const std::string&); // Changes the current directory
-	void ls(); // Lists files in the current directory
-	void pwd(); // Prints the current working directory
-	void echo(const std::string&); // Outputs the given string
-	void exit(); // Exits the program
-	void help(); // Displays help information
-
-public:
-	// Public method to execute the command-line interface
-	void run(); // Runs the command-line interface};
-
-};
 void Shell::run()
 {
 	std::string input;
@@ -32,7 +10,8 @@ void Shell::run()
         
         // Reading user input
         std::getline(std::cin, input);
-
+	
+	m_history.push_back(input);
         // Process the user input
         if (input == "exit") {
 		exit();
@@ -47,6 +26,8 @@ void Shell::run()
         	ls(); 
 	} else if (input.substr(0, 5) == "echo ") {
         	echo(input);
+	} else if (input == "history") {
+		history();
         } else {
             std::cout << "Command not found. Type 'help' for available commands." << std::endl;
         }
@@ -55,7 +36,7 @@ void Shell::run()
 
 void Shell::cd(const std::string& input)
 {
-	std::string path = input.substr(3);
+	std::string path = input.substr(3);	// Retraves the name of the directory
 	if (chdir(path.c_str()) != 0) {
 		std::cerr << "Failed to change directory." << std::endl;
 	}
@@ -79,24 +60,25 @@ void Shell::ls()
 
 void Shell::pwd()
 {
-	char cwd[1024];
-	if (getcwd(cwd, sizeof(cwd)) != nullptr) {
+	char cwd[1024];    // Buffer to store the current working directory
+	// Check if the current working directory can be retrieved successfully
+	if (getcwd(cwd, sizeof(cwd)) != nullptr) {	// If successful, getcwd() returns a pointer to the buffer
 		std::cout << "Current directory: " << cwd << std::endl;
-	} else {
+	} else {	// If unsuccessful, getcwd() returns a NULL pointer and sets errno
 		std::cerr << "Unable to get current directory." << std::endl;
 	}
 }
 
-void Shell::echo(const std::string& input)
+void Shell::echo(const std::string& input)	// Prompts the user input
 {
 	std::cout << input.substr(5) << std::endl;
 }
 
-void Shell::exit()
+void Shell::exit()	// Prompts the error message
 {
 	std::cout << "Exiting the shell." << std::endl;
 }
-void Shell::help() 
+void Shell::help() // Prompts the valid commandes
 {
     std::cout << "Supported commands:\n"
                  "cd: Change the current working directory.\n"
@@ -107,4 +89,20 @@ void Shell::help()
                  "help: Provide information about available commands.\n";
 }
 
-#endif	// SHELL_H
+void Shell::history()
+{
+	for (const auto& command : m_history) {
+		std::cout << command << std::endl;
+	}
+}
+
+void Shell::upArrow()
+{
+
+}
+
+void Shell::downArrow()
+{
+
+
+}

@@ -7,7 +7,8 @@
 #include <dirent.h>
 #include <vector>
 #include <string>
-
+#include <ctime>
+#include <fstream>
 
 class Shell
 {
@@ -21,13 +22,17 @@ private:
 	void exit(); // Exits the program
 	void help(); // Displays help information
 	void history();	// Enables users to display previously executed commands
+	void upArrow();	// Allows the user to press the up  arrow key to navigate through the command history
+	void downArrow(); 	// Allows the user to press the down arrow key to navigate through the command history
+	void date();	// Displays the current date
+	void overwrite_input(const std::string&);
+	//void overwriteIutput();
+	//void appentInput();
+	//void appendIutpoot();
+	void processInput(const std::string&);	// Processes the input
 public:
 	// Public method to execute the command-line interface
 	void run(); // Runs the command-line interface};
-	void upArrow();	// Allows the user to press the up  arrow key to navigate through the command history
-
-	void downArrow(); 	// Allows the user to press the down arrow key to navigate through the command history
-
 
 };
 

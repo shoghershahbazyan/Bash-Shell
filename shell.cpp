@@ -5,6 +5,20 @@ void removeWhitespaces(std::string& input)
 	input.erase(0, input.find_first_not_of(" \t\n\r\f\v"));
 	input.erase(input.find_last_not_of(" \t\n\r\f\v") + 1);
 }
+void coutFile(std::string& file_name) 
+{
+	removeWhitespaces(file_name);
+	std::ifstream File2(file_name);
+	if (!File2.is_open()) {
+		std::cout << "Failed to open the file: " << file_name << std::endl;
+	} else {
+		std::string line;
+		while ( std::getline(File2, line)) {
+			std::cout << line << std::endl;
+		}
+		File2.close();
+	}
+}
 void Shell::run()
 {
 	std::string input;
@@ -20,34 +34,38 @@ void Shell::run()
 		if (input == "exit") {
 			exit();
 			break;
-		} else if (inpur.find(">>") {
+		//} else if (inpur.find(">>") {
 		
 
 
 		} else if (input.find('>') != std::string::npos) {
+	
 			size_t index = input.find_first_of('>');
+			size_t index2 = input[index + 1] == '>' ? index + 1 : index;
 			std::string command = input.substr(0, index);
-			std::string file_name = input.substr(index + 1);	
+			std::string file_name = input.substr(index2 + 1);	
 			removeWhitespaces(file_name);
-			removeWhitespaces(command);		
 			if (file_name.empty()) {
 				std::cout << "parse error near `\n'" << std::endl;
 			} else {
-				std::ofstream File(file_name);
+				std::ofstream File;
+				if (index != index2) {
+					File.open(file_name, std::ios_base::app);
+				} else {
+					File.open(file_name);
+				}
 				if (!File.is_open()) {
-				std::cout << "Failed to open the file: " << file_name << std::endl;
+					std::cout << "Failed to open the file: " << file_name << std::endl;
 				} else {
 					auto cout_buf = std::cout.rdbuf();
 					std::cout.rdbuf(File.rdbuf());
 					processInput(command);
 					std::cout.rdbuf(cout_buf);
+					File.close();
 				}
-				File.close();
 			}
-	/*	} else if (input.find_first_of('|')) { // pipe
-	*/		
+			
 		} else {
-			removeWhitespaces(input);
 			processInput(input);
 		}
 	}
@@ -56,6 +74,25 @@ void Shell::run()
 void Shell::cd(const std::string& input)
 {
 	std::string path = input.substr(3);	// Retraves the name of the directory
+	if (path.find("<") != std::string::npos) {
+		path = path.substr(path.find_first_not_of('<'));
+		removeWhitespaces(path);
+		std::ifstream File(path);
+		if (!File.is_open()) {
+			std::cout << "Failed to open the file: " << path << std::endl;
+		} else {
+			std::stringstream buffer;
+			buffer << File.rdbuf();
+			File.close();
+			std::string tmp = buffer.str();
+			path.clear();
+			for (char c : tmp) {
+				if (!std::isspace(static_cast<unsigned char>(c))) {
+					path += c;
+				}
+			}
+		}
+	}	
 	if (chdir(path.c_str()) != 0) {
 		std::cerr << "Failed to change directory." << std::endl;
 	}
@@ -136,8 +173,9 @@ void overwrite_input(const std::string& input)
 
 }
 
-void Shell::processInput(const std::string& input)
+void Shell::processInput(std::string& input)
 {
+	removeWhitespaces(input);
 	if (input == "pwd") {
 		pwd();
 	} else if (input.substr(0, 3) == "cd ") {
@@ -150,7 +188,42 @@ void Shell::processInput(const std::string& input)
 		history();
 	} else if (input == "date") {
 		date();
+	} else if (input.substr(0, 3) == "cat") {
+		cat(input.substr(4));
 	} else {
             std::cout << "Command not found. Type 'help' for available commands." << std::endl;
         }
 }
+
+void Shell::cat(const std::string& command)
+{
+	if (command.find("<<") != std::string::npos) {
+		
+		std::string delim = command.substr(2);
+		removeWhitespaces(delim);
+		std::string fname{"rncji.txt"};
+		std::ofstream File(fname);
+		if (!File.is_open()) {
+			std::cout << "Failed to open the file: " << std::endl;
+		} else {
+			std::string line;
+			while (true) {
+				std::getline(std::cin, line);
+				if (line == delim) {
+					break;
+				}
+				File << line << '\n';
+			}
+			File.close();
+			coutFile(fname);
+		}
+	} else {
+		
+		std::string file_name = command;
+		if (file_name.find_first_of('<') != std::string::npos) {
+			file_name = file_name.substr(file_name.find_first_of('<') + 1);
+		}
+		coutFile(file_name);
+	 }
+}
+

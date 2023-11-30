@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+
+#include <sstream>
 #include <unistd.h>
 #include <dirent.h>
 #include <vector>
@@ -29,7 +31,8 @@ private:
 	//void overwriteIutput();
 	//void appentInput();
 	//void appendIutpoot();
-	void processInput(const std::string&);	// Processes the input
+	void processInput(std::string&);	// Processes the input
+	void cat(const std::string&);	//	Enebles the user to view the file
 public:
 	// Public method to execute the command-line interface
 	void run(); // Runs the command-line interface};

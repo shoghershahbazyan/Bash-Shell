@@ -11,6 +11,9 @@
 #include <string>
 #include <ctime>
 #include <fstream>
+#include <readline/readline.h>
+#include <readline/history.h>
+
 
 class Shell
 {

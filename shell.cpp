@@ -1,73 +1,66 @@
 #include "shell.h"
+#include "helper_functions.h"
 
-void removeWhitespaces(std::string& input)
-{
-	input.erase(0, input.find_first_not_of(" \t\n\r\f\v"));
-	input.erase(input.find_last_not_of(" \t\n\r\f\v") + 1);
-}
-void coutFile(std::string& file_name) 
-{
-	removeWhitespaces(file_name);
-	std::ifstream File2(file_name);
-	if (!File2.is_open()) {
-		std::cout << "Failed to open the file: " << file_name << std::endl;
-	} else {
-		std::string line;
-		while ( std::getline(File2, line)) {
-			std::cout << line << std::endl;
-		}
-		File2.close();
-	}
-}
 void Shell::run()
 {
-	std::string input;
+	std::string input1;
 	while (true) {
+		bool finish {false};
 		// Displaying a prompt
 		std::cout << "MyShell <3 ";
 		
 		// Reading user input
-		std::getline(std::cin, input);
+		std::getline(std::cin, input1);
 		
-		m_history.push_back(input);
-		// Process the user input
-		if (input == "exit") {
-			exit();
-			break;
-		//} else if (inpur.find(">>") {
+		m_history.push_back(input1);
 		
-
-
-		} else if (input.find('>') != std::string::npos) {
-	
-			size_t index = input.find_first_of('>');
-			size_t index2 = input[index + 1] == '>' ? index + 1 : index;
-			std::string command = input.substr(0, index);
-			std::string file_name = input.substr(index2 + 1);	
-			removeWhitespaces(file_name);
-			if (file_name.empty()) {
-				std::cout << "parse error near `\n'" << std::endl;
-			} else {
-				std::ofstream File;
-				if (index != index2) {
-					File.open(file_name, std::ios_base::app);
-				} else {
-					File.open(file_name);
-				}
-				if (!File.is_open()) {
-					std::cout << "Failed to open the file: " << file_name << std::endl;
-				} else {
-					auto cout_buf = std::cout.rdbuf();
-					std::cout.rdbuf(File.rdbuf());
-					processInput(command);
-					std::cout.rdbuf(cout_buf);
-					File.close();
-				}
-			}
-			
-		} else {
-			processInput(input);
+		// parses the input command to identify multiple commands separated by the pipe character
+		
+		std::vector<std::string> commands;
+		std::istringstream iss(input1);
+		std::string command;
+		
+		while (std::getline(iss, command, '|')) {
+			commands.push_back(command);
 		}
+		for (auto& input : commands) {
+			// Process the user input
+			if (input == "exit") {
+				exit();
+				finish = true;
+				break;
+			} else if (input.find('>') != std::string::npos) {
+		
+				size_t index = input.find_first_of('>');
+				size_t index2 = input[index + 1] == '>' ? index + 1 : index;
+				std::string command = input.substr(0, index);
+				std::string file_name = input.substr(index2 + 1);	
+				removeWhitespaces(file_name);
+				if (file_name.empty()) {
+					std::cout << "parse error near `\n'" << std::endl;
+				} else {
+					std::ofstream File;
+					if (index != index2) {
+						File.open(file_name, std::ios_base::app);
+					} else {
+						File.open(file_name);
+					}
+					if (!File.is_open()) {
+						std::cout << "Failed to open the file: " << file_name << std::endl;
+					} else {
+						auto cout_buf = std::cout.rdbuf();
+						std::cout.rdbuf(File.rdbuf());
+						processInput(command);
+						std::cout.rdbuf(cout_buf);
+						File.close();
+					}
+				}
+				
+			} else {
+				processInput(input);
+			}
+		}
+		if (finish) break;
 	}
 }
 
